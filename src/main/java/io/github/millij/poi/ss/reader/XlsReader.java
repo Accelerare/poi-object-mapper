@@ -1,9 +1,6 @@
 package io.github.millij.poi.ss.reader;
 
 import static io.github.millij.poi.util.Beans.isInstantiableType;
-import io.github.millij.poi.SpreadsheetReadException;
-import io.github.millij.poi.ss.handler.RowListener;
-import io.github.millij.poi.util.Spreadsheet;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -20,6 +17,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.github.millij.poi.SpreadsheetReadException;
+import io.github.millij.poi.ss.handler.RowListener;
+import io.github.millij.poi.util.Spreadsheet;
 
 /**
  * Reader impletementation of {@link Workbook} for an POIFS file (.xls).
@@ -30,13 +30,11 @@ public class XlsReader extends AbstractSpreadsheetReader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(XlsReader.class);
 
-
     // Constructor
 
     public XlsReader() {
         super();
     }
-
 
     // WorkbookReader Impl
     // ------------------------------------------------------------------------
@@ -69,7 +67,7 @@ public class XlsReader extends AbstractSpreadsheetReader {
             LOGGER.error(errMsg, ex);
             throw new SpreadsheetReadException(errMsg, ex);
         }
-        
+
     }
 
     @Override
@@ -96,15 +94,13 @@ public class XlsReader extends AbstractSpreadsheetReader {
         }
     }
 
-
-
     // Sheet Process
-    
+
     protected <T> void processSheet(Class<T> beanClz, HSSFSheet sheet, int headerRowNo, RowListener<T> eventHandler) {
         // Header column - name mapping
         HSSFRow headerRow = sheet.getRow(headerRowNo);
         Map<Integer, String> headerMap = this.extractCellHeaderMap(headerRow);
-        
+
         // Bean Properties - column name mapping
         Map<String, String> cellPropMapping = Spreadsheet.getColumnToPropertyMap(beanClz);
 
@@ -127,7 +123,6 @@ public class XlsReader extends AbstractSpreadsheetReader {
             eventHandler.row(rowNum, rowBean);
         }
     }
-
 
     // Private Methods
     // ------------------------------------------------------------------------
@@ -206,8 +201,5 @@ public class XlsReader extends AbstractSpreadsheetReader {
 
         return rowDataMap;
     }
-
-
-
 
 }
