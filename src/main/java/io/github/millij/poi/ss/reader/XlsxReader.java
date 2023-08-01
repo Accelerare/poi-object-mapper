@@ -192,15 +192,8 @@ public class XlsxReader extends AbstractSpreadsheetReader {
             int cellCol = cell.getColumnIndex();
             String cellColName = columnHeaderMap.get(cellCol);
 
-            // String rv = "";
-            // LocalDateTime dateObj = coluna.getLocalDateTimeCellValue();
-            // DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yyyy
-            // HH:mm:ss");
-            // rv = dateObj.format(format);
-
             // Process cell value
-            // Process cell value
-            switch (cell.getCellType()) { // Use getCellType() em vez de getCellTypeEnum()
+            switch (cell.getCellType()) {
                 case STRING:
                     rowDataMap.put(cellColName, cell.getStringCellValue());
                     break;
