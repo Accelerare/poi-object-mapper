@@ -3,17 +3,22 @@ package io.github.millij.poi.ss.reader;
 import static io.github.millij.poi.util.Beans.isInstantiableType;
 
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,21 +47,22 @@ public class XlsxReader extends AbstractSpreadsheetReader {
     // ------------------------------------------------------------------------
 
     @Override
-    public <T> void read(Class<T> beanClz, InputStream is, RowListener<T> listener) throws SpreadsheetReadException {
+    public <T> void read(Class<T> beanClz, InputStream is, RowListener<T> listener)
+            throws SpreadsheetReadException {
         // Sanity checks
         if (!isInstantiableType(beanClz)) {
-            throw new IllegalArgumentException("XlsReader :: Invalid bean type passed !");
+            throw new IllegalArgumentException("XlsxReader :: Invalid bean type passed !");
         }
 
         try {
-            final HSSFWorkbook wb = new HSSFWorkbook(is);
+            final XSSFWorkbook wb = new XSSFWorkbook(is);
             final int sheetCount = wb.getNumberOfSheets();
-            LOGGER.debug("Total no. of sheets found in HSSFWorkbook : #{}", sheetCount);
+            LOGGER.debug("Total no. of sheets found in XSSFWorkbook : #{}", sheetCount);
 
             // Iterate over sheets
             for (int i = 0; i < sheetCount; i++) {
-                final HSSFSheet sheet = wb.getSheetAt(i);
-                LOGGER.debug("Processing HSSFSheet at No. : {}", i);
+                final XSSFSheet sheet = wb.getSheetAt(i);
+                LOGGER.debug("Processing XSSFSheet at No. : {}", i);
 
                 // Process Sheet
                 this.processSheet(beanClz, sheet, 0, listener);
@@ -65,11 +71,10 @@ public class XlsxReader extends AbstractSpreadsheetReader {
             // Close workbook
             wb.close();
         } catch (Exception ex) {
-            String errMsg = String.format("Error reading HSSFSheet, to %s : %s", beanClz, ex.getMessage());
+            String errMsg = String.format("Error reading XSSFSheet, to %s : %s", beanClz, ex.getMessage());
             LOGGER.error(errMsg, ex);
             throw new SpreadsheetReadException(errMsg, ex);
         }
-
     }
 
     @Override
@@ -77,30 +82,35 @@ public class XlsxReader extends AbstractSpreadsheetReader {
             throws SpreadsheetReadException {
         // Sanity checks
         if (!isInstantiableType(beanClz)) {
-            throw new IllegalArgumentException("XlsReader :: Invalid bean type passed !");
+            throw new IllegalArgumentException("XlsxReader :: Invalid bean type passed !");
         }
 
         try {
-            HSSFWorkbook wb = new HSSFWorkbook(is);
-            final HSSFSheet sheet = wb.getSheetAt(sheetNo);
+            final XSSFWorkbook wb = new XSSFWorkbook(is);
+            final int sheetCount = wb.getNumberOfSheets();
+            LOGGER.debug("Total no. of sheets found in XSSFWorkbook : #{}", sheetCount);
 
-            // Process Sheet
-            this.processSheet(beanClz, sheet, 0, listener);
+            // Iterate over sheets
+            for (int i = 0; i < sheetCount; i++) {
+                final XSSFSheet sheet = wb.getSheetAt(i);
+                LOGGER.debug("Processing XSSFSheet at No. : {}", i);
+
+                // Process Sheet
+                this.processSheet(beanClz, sheet, 0, listener);
+            }
 
             // Close workbook
             wb.close();
         } catch (Exception ex) {
-            String errMsg = String.format("Error reading sheet %d, to %s : %s", sheetNo, beanClz, ex.getMessage());
+            String errMsg = String.format("Error reading XSSFSheet, to %s : %s", beanClz, ex.getMessage());
             LOGGER.error(errMsg, ex);
             throw new SpreadsheetReadException(errMsg, ex);
         }
     }
 
-    // Sheet Process
-
-    protected <T> void processSheet(Class<T> beanClz, HSSFSheet sheet, int headerRowNo, RowListener<T> eventHandler) {
+    protected <T> void processSheet(Class<T> beanClz, XSSFSheet sheet, int headerRowNo, RowListener<T> eventHandler) {
         // Header column - name mapping
-        HSSFRow headerRow = sheet.getRow(headerRowNo);
+        XSSFRow headerRow = sheet.getRow(headerRowNo);
         Map<Integer, String> headerMap = this.extractCellHeaderMap(headerRow);
 
         // Bean Properties - column name mapping
@@ -109,7 +119,7 @@ public class XlsxReader extends AbstractSpreadsheetReader {
         Iterator<Row> rows = sheet.rowIterator();
         while (rows.hasNext()) {
             // Process Row Data
-            HSSFRow row = (HSSFRow) rows.next();
+            XSSFRow row = (XSSFRow) rows.next();
             int rowNum = row.getRowNum();
             if (rowNum == 0) {
                 continue; // Skip Header row
@@ -129,7 +139,7 @@ public class XlsxReader extends AbstractSpreadsheetReader {
     // Private Methods
     // ------------------------------------------------------------------------
 
-    private Map<Integer, String> extractCellHeaderMap(HSSFRow headerRow) {
+    private Map<Integer, String> extractCellHeaderMap(XSSFRow headerRow) {
         // Sanity checks
         if (headerRow == null) {
             return new HashMap<Integer, String>();
@@ -139,7 +149,7 @@ public class XlsxReader extends AbstractSpreadsheetReader {
 
         Iterator<Cell> cells = headerRow.cellIterator();
         while (cells.hasNext()) {
-            HSSFCell cell = (HSSFCell) cells.next();
+            XSSFCell cell = (XSSFCell) cells.next();
 
             int cellCol = cell.getColumnIndex();
 
@@ -166,7 +176,7 @@ public class XlsxReader extends AbstractSpreadsheetReader {
         return cellHeaderMap;
     }
 
-    private Map<String, Object> extractRowDataAsMap(HSSFRow row, Map<Integer, String> columnHeaderMap) {
+    private Map<String, Object> extractRowDataAsMap(XSSFRow row, Map<Integer, String> columnHeaderMap) {
         // Sanity checks
         if (row == null) {
             return new HashMap<String, Object>();
@@ -176,18 +186,39 @@ public class XlsxReader extends AbstractSpreadsheetReader {
 
         Iterator<Cell> cells = row.cellIterator();
         while (cells.hasNext()) {
-            HSSFCell cell = (HSSFCell) cells.next();
+            XSSFCell cell = (XSSFCell) cells.next();
 
             int cellCol = cell.getColumnIndex();
             String cellColName = columnHeaderMap.get(cellCol);
 
+            // String rv = "";
+            // LocalDateTime dateObj = coluna.getLocalDateTimeCellValue();
+            // DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yyyy
+            // HH:mm:ss");
+            // rv = dateObj.format(format);
+
             // Process cell value
-            switch (cell.getCellTypeEnum()) {
+            // Process cell value
+            switch (cell.getCellType()) { // Use getCellType() em vez de getCellTypeEnum()
                 case STRING:
                     rowDataMap.put(cellColName, cell.getStringCellValue());
                     break;
                 case NUMERIC:
-                    rowDataMap.put(cellColName, cell.getNumericCellValue());
+                    if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+
+                        String dataFormatada = "";
+                        Date dateValue = cell.getDateCellValue();
+                        Instant instant = dateValue.toInstant();
+                        ZoneId zoneId = ZoneId.systemDefault();
+                        LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
+
+                        DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                        dataFormatada = localDateTime.format(format);
+
+                        rowDataMap.put(cellColName, dataFormatada);
+                    } else {
+                        rowDataMap.put(cellColName, cell.getNumericCellValue());
+                    }
                     break;
                 case BOOLEAN:
                     rowDataMap.put(cellColName, cell.getBooleanCellValue());
