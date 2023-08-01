@@ -153,8 +153,9 @@ public class XlsxReader extends AbstractSpreadsheetReader {
 
             int cellCol = cell.getColumnIndex();
 
-            // Process cell value
-            switch (cell.getCellTypeEnum()) {
+            // Process cell
+
+            switch (cell.getCellType()) {
                 case STRING:
                     cellHeaderMap.put(cellCol, cell.getStringCellValue());
                     break;
