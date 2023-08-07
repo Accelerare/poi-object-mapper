@@ -3,6 +3,7 @@ package io.github.millij.poi.ss.reader;
 import static io.github.millij.poi.util.Beans.isInstantiableType;
 
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -211,7 +212,12 @@ public class XlsxReader extends AbstractSpreadsheetReader {
 
                         rowDataMap.put(cellColName, dataFormatada);
                     } else {
-                        rowDataMap.put(cellColName, cell.getNumericCellValue());
+                        double valor = cell.getNumericCellValue();
+                        DecimalFormat formatter = new DecimalFormat("0.##");
+                        String formated = formatter.format(valor).toString();
+
+                        System.out.println("Não é data - #" + formated + "#");
+                        rowDataMap.put(cellColName, formated);
                     }
                     break;
                 case BOOLEAN:
