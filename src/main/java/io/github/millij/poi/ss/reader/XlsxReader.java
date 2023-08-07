@@ -212,11 +212,13 @@ public class XlsxReader extends AbstractSpreadsheetReader {
 
                         rowDataMap.put(cellColName, dataFormatada);
                     } else {
+
+                        //numeros convertidos em string estavam confundindo a casa decimal
+                        //a celula continha 123 mas a string convertida vinha 1230 (123.0)
                         double valor = cell.getNumericCellValue();
                         DecimalFormat formatter = new DecimalFormat("0.##");
                         String formated = formatter.format(valor).toString();
 
-                        System.out.println("Não é data - #" + formated + "#");
                         rowDataMap.put(cellColName, formated);
                     }
                     break;
